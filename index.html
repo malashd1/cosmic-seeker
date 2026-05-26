@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0014" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CosmicSeeker" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="description" content="Galaxian-inspired arcade shooter on Base. 100 levels, on-chain rewards in $SKR." />
+    <meta property="og:title" content="CosmicSeeker — Galaxian on Seeker" />
+    <meta property="og:description" content="100 levels, 12 enemy types, 10 bosses. Earn $SKR on Base." />
+    <title>CosmicSeeker — Galaxian on Seeker</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game" width="480" height="960" aria-label="CosmicSeeker game canvas"></canvas>
+      <div id="hud">
+        <div id="hud-top">
+          <span id="score" title="Current run score">SCORE 0</span>
+          <span id="points" title="Lifetime points (level clears + shop purchases)">PTS 0</span>
+          <span id="level">LV 1</span>
+        </div>
+        <div id="hud-bottom">
+          <span id="lives">♥♥♥</span>
+          <span id="bombs" title="Press X to detonate">💣×2 [X]</span>
+          <span id="combo"></span>
+        </div>
+      </div>
+      <div id="overlay" class="visible">
+        <h1>COSMICSEEKER</h1>
+        <p class="tag">Galaxian on Seeker · 100 levels<br>Earn POINTS</p>
+        <button id="btn-start">PRESS START</button>
+        <button id="btn-connect">CONNECT WALLET</button>
+        <button id="btn-shop">SHOP</button>
+        <button id="btn-leaderboard">LEADERBOARD</button>
+        <button id="btn-missions">DAILY MISSIONS</button>
+        <button id="btn-settings">SETTINGS</button>
+        <div id="wallet-status"></div>
+      </div>
+      <div id="pause-overlay" class="hidden">
+        <h2>PAUSED</h2>
+        <button id="btn-resume">RESUME · ESC</button>
+        <button id="btn-quit" class="danger">QUIT TO MENU</button>
+      </div>
+      <div id="clear-screen" class="hidden">
+        <h2 id="clear-title">LV 1 CLEAR</h2>
+        <div id="clear-summary"></div>
+        <button id="btn-next" class="primary">NEXT LEVEL</button>
+        <button id="btn-clear-menu" class="danger">EXIT TO MENU</button>
+      </div>
+      <div id="gameover-screen" class="hidden">
+        <h2 id="gameover-title">GAME OVER</h2>
+        <div id="gameover-summary"></div>
+        <div id="gameover-warn" style="color:#ff4860;font-size:9px;text-align:center;max-width:280px">
+          Progress reset — you restart from Level 1.
+        </div>
+        <button id="btn-retry" class="primary">RESTART FROM LV 1</button>
+        <button id="btn-gameover-menu" class="danger">EXIT TO MENU</button>
+      </div>
+      <div id="shop" class="hidden panel"></div>
+      <div id="leaderboard" class="hidden panel"></div>
+      <div id="missions" class="hidden panel"></div>
+      <div id="settings" class="hidden panel"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,117 @@
+# Legacy EVM contracts CI.
+#
+# The Solidity tree under `legacy-evm/` is archived — kept for audit lineage
+# and as a reference spec for the Anchor program under `program/`. This
+# workflow only fires when someone explicitly touches the archive (or runs
+# it manually via the Actions tab); it is NOT a release gate.
+#
+# Once the Anchor program is feature-complete and the `legacy-evm/` tree is
+# deleted, delete this workflow file along with it.
+
+name: legacy-evm contracts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'legacy-evm/**'
+      - '.github/workflows/contracts.yml'
+  pull_request:
+    paths:
+      - 'legacy-evm/**'
+      - '.github/workflows/contracts.yml'
+
+defaults:
+  run:
+    working-directory: legacy-evm
+
+jobs:
+  forge:
+    name: foundry · build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install OpenZeppelin
+        run: forge install OpenZeppelin/openzeppelin-contracts --no-commit
+
+      - name: Format check
+        run: forge fmt --check
+
+      - name: Build
+        run: forge build --sizes
+
+      - name: Test
+        run: forge test -vv --no-match-test "Fuzz"
+        env:
+          FOUNDRY_PROFILE: default
+
+      - name: Coverage (informational)
+        run: forge coverage --report summary || true
+
+      - name: Gas snapshot
+        run: forge snapshot --check || forge snapshot
+
+  slither:
+    name: slither · static analysis
+    runs-on: ubuntu-latest
+    needs: forge
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install OpenZeppelin
+        run: forge install OpenZeppelin/openzeppelin-contracts --no-commit
+
+      - name: Build
+        run: forge build
+
+      - name: Run Slither
+        uses: crytic/slither-action@v0.4.0
+        with:
+          target: legacy-evm/
+          slither-args: --filter-paths "lib/|test/" --exclude naming-convention,solc-version,assembly --fail-medium
+          slither-config: legacy-evm/slither.config.json
+          fail-on: medium
+
+  mythril:
+    name: mythril · symbolic analysis (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: forge
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
+      - name: Install Mythril
+        run: pip install mythril==0.24.8
+
+      - name: Run Mythril on critical contracts
+        run: |
+          for f in src/RewardsDistributor.sol src/PaymentRouter.sol src/Treasury.sol src/GameRegistry.sol; do
+            echo "=== $f ==="
+            myth analyze "$f" \
+              --solv 0.8.26 \
+              --solc-args "--optimize --optimize-runs 200" \
+              --execution-timeout 180 \
+              -o markdown || true
+          done

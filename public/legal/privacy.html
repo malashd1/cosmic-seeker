@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0014" />
+  <title>Privacy Policy — CosmicSeeker</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/legal/legal.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a href="/" class="brand">COSMICSEEKER</a>
+      <a href="/" class="back-link">← back to game</a>
+    </div>
+
+    <h1>Privacy Policy</h1>
+    <p class="updated"><strong>Last updated:</strong> 2026-05-26</p>
+
+    <p>This Privacy Policy explains what data <strong>CosmicSeeker</strong> (the "App") collects, how it is used, and what choices you have. The App is built for Solana users — most authentication and payment data is public-key based, on-chain, and inherently public.</p>
+
+    <h2>1) What we collect</h2>
+    <p>When you use the App, we may collect and store on our backend:</p>
+    <ul>
+      <li>your <strong>Solana wallet public key</strong> (it's your account ID — no email, name, or phone required),</li>
+      <li><strong>game results</strong>: level reached, score, enemies killed, boss kills, damage dealt/taken, frame counts, input traces (used for replay-based anti-cheat),</li>
+      <li><strong>shop purchases</strong>: which item, quantity, on-chain transaction signature,</li>
+      <li><strong>mission progress and claims</strong>: which mission, completion state, signed reward claims,</li>
+      <li><strong>lifetime POINTS</strong> aggregate, leaderboard rank, weekly stats,</li>
+      <li><strong>technical / security logs</strong>: timestamps, error logs, rate-limit counters, basic request metadata. May include a short-lived connection IP for abuse prevention.</li>
+    </ul>
+
+    <h2>2) What we do NOT collect</h2>
+    <ul>
+      <li>We do <strong>not</strong> collect your <strong>private keys</strong>, <strong>seed phrase</strong>, or any wallet credentials. The App has no way to access them — they live inside your wallet app.</li>
+      <li>We do not require your email address, phone number, real name, or any other off-chain identity.</li>
+      <li>We do not run third-party analytics SDKs (no Google Analytics, no Facebook pixel, no ad networks).</li>
+    </ul>
+
+    <h2>3) On-chain data</h2>
+    <p>Solana transactions are <strong>public by design</strong>. When you purchase an item in the shop, the resulting SPL transfer from your wallet to the treasury is permanently recorded on the Solana blockchain and is visible to anyone via block explorers (Solscan, SolanaFM, etc.).</p>
+    <p>We have no ability to delete, modify, or hide on-chain data.</p>
+
+    <h2>4) How we use your data</h2>
+    <ul>
+      <li>authenticate you via wallet signature ("sign in"),</li>
+      <li>run gameplay features: leaderboards, missions, shop, inventory,</li>
+      <li>detect, prevent, and respond to abuse, bots, cheating, and rate-limit violations,</li>
+      <li>diagnose bugs and improve performance,</li>
+      <li>compute aggregate stats (e.g., "1 234 active wallets this week").</li>
+    </ul>
+
+    <h2>5) Sharing</h2>
+    <p>We do <strong>not</strong> sell your data. We may share:</p>
+    <ul>
+      <li><strong>aggregated, anonymised</strong> statistics (e.g., total runs played, average level reached) for product or marketing communications,</li>
+      <li>data when legally required, to enforce these terms, to investigate fraud, or to protect users / the service,</li>
+      <li>technical telemetry with infrastructure providers (e.g., Solana RPC providers) as necessary to deliver the service.</li>
+    </ul>
+
+    <h2>6) Data retention</h2>
+    <ul>
+      <li>Game results, leaderboard standings, and lifetime POINTS may be retained as long as the service operates, to preserve competitive integrity.</li>
+      <li>Security and rate-limit logs are retained for a limited period (typically days to weeks), unless required longer for fraud prevention.</li>
+      <li>Mission progress is keyed to a daily epoch — old daily progress rows may be pruned after several weeks.</li>
+      <li>On-chain transaction records cannot be retained or deleted by us — they live on Solana permanently.</li>
+    </ul>
+
+    <h2>7) Your choices</h2>
+    <ul>
+      <li>You can stop using the App at any time by uninstalling it.</li>
+      <li>You can request a wipe of all server-stored data tied to your wallet public key by emailing the contact below, or by using the in-app reset endpoint where available. <strong>This does not affect on-chain data.</strong></li>
+      <li>You can disconnect your wallet at any time via the wallet app itself.</li>
+    </ul>
+
+    <h2>8) Children</h2>
+    <p>The App is not directed to children under 13. We do not knowingly collect data from children. If you believe a child has used the App, contact us and we will delete any server-side data associated with that wallet.</p>
+
+    <h2>9) Security</h2>
+    <p>We use standard practices to protect server-stored data (TLS in transit, restricted access on the host, signed claim messages for reward disbursement). However, no system is perfectly secure. You acknowledge that data transmission and on-chain transactions carry inherent risks.</p>
+
+    <h2>10) Changes to this policy</h2>
+    <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top will reflect any changes. Continued use of the App after a change means you accept the updated policy.</p>
+
+    <h2>11) Contact</h2>
+    <p>Privacy requests, data deletion, or questions: <a href="mailto:dima@chisoft.co">dima@chisoft.co</a></p>
+
+    <div class="footer">
+      <a href="/">Game</a> ·
+      <a href="/legal/terms.html">Terms</a> ·
+      <a href="/legal/privacy.html">Privacy</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive launcher icon (API 26+).
+
+    Background:  brand purple (#0d0524) — a solid colour layer so the
+                 system can apply any mask shape (circle / squircle /
+                 squareless) without ugly white corners showing through.
+
+    Foreground:  ic_maskable.png — the cosmic ship SVG, pre-rendered
+                 inside Android's adaptive-icon safe zone (~66 % of the
+                 outer 108 dp canvas).
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_maskable" />
+</adaptive-icon>

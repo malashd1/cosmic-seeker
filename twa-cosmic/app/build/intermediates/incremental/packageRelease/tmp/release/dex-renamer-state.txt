@@ -1,0 +1,4 @@
+#Tue May 26 12:57:28 CEST 2026
+base.0=/Users/malashd/Documents/auto_invoice/.claude/worktrees/sad-wilbur-ea631c/cosmic-seeker/twa-cosmic/app/build/intermediates/dex/release/minifyReleaseWithR8/classes.dex
+renamed.0=classes.dex
+path.0=classes.dex

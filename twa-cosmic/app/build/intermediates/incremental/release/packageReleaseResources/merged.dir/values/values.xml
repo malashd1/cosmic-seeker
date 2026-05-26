@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="enableNotification">true</bool>
+    <bool name="enableSiteSettingsShortcut">true</bool>
+    <color name="backgroundColor">#0a0014</color>
+    <color name="colorPrimary">#0a0014</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="ic_launcher_background">#0d0524</color>
+    <color name="navigationColor">#000000</color>
+    <color name="navigationColorDark">#000000</color>
+    <color name="navigationDividerColor">#000000</color>
+    <color name="navigationDividerColorDark">#000000</color>
+    <color name="shortcut_background">#0d0524</color>
+    <integer name="splashScreenFadeOutDuration">300</integer>
+    <string name="appName" translatable="false">CosmicSeeker</string>
+    <string name="assetStatements">
+    [{
+        \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+        \"target\": {
+            \"namespace\": \"web\",
+            \"site\": \"https://cosmic.soulview.org\"
+        }
+    }]
+    
+  </string>
+    <string name="fallbackType" translatable="false">customtabs</string>
+    <string name="fullScopeUrl" translatable="false">https://cosmic.soulview.org/</string>
+    <string name="generatorApp" translatable="false">bubblewrap-cli</string>
+    <string name="hostName" translatable="false">cosmic.soulview.org</string>
+    <string name="launchUrl" translatable="false">https://cosmic.soulview.org/</string>
+    <string name="launcherName" translatable="false">CosmicSeeker</string>
+    <string name="orientation" translatable="false">portrait</string>
+    <string name="providerAuthority" translatable="false">org.soulview.cosmic.fileprovider</string>
+    <string name="webManifestUrl" translatable="false">https://cosmic.soulview.org/manifest.webmanifest</string>
+</resources>

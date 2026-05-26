@@ -1,0 +1,28 @@
+{
+  "name": "CosmicSeeker",
+  "short_name": "CosmicSeeker",
+  "description": "Galaxian-style arcade shooter on Base. 100 levels, on-chain rewards in $SKR.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#0a0014",
+  "theme_color": "#0a0014",
+  "categories": ["games", "arcade"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "/screenshot-1.png", "sizes": "480x640", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "shortcuts": [
+    { "name": "Daily Tournament", "url": "/?screen=tournament", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Daily Missions", "url": "/?screen=missions", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Shop", "url": "/?screen=shop", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,71 @@
+# Production stack for CosmicSeeker backend.
+#
+#   docker compose -f docker-compose.production.yml up -d
+#
+# Spins up:
+#   1. `backend`  — the Node API on port 8787 (NOT published to the host; only
+#                   reachable via the Caddy container on the shared network).
+#   2. `caddy`    — TLS-terminating reverse proxy on :80 + :443, configured by
+#                   ./Caddyfile, with automatic Let's Encrypt provisioning for
+#                   cosmic.soulview.org.
+#
+# Persistent volumes:
+#   - `cosmic-seeker-db`  → /data inside the backend (SQLite)
+#   - `caddy-data` + `caddy-config` → cert + state, survives container restarts
+#
+# Required files on disk before `docker compose up`:
+#   - .env  (populated from .env.example; SIGNER_KEYPAIR_BASE58 + CORS_ALLOWLIST
+#           are mandatory)
+#   - Caddyfile
+
+services:
+  backend:
+    build: .
+    image: cosmic-seeker-backend:latest
+    container_name: cosmic-seeker-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 8787
+      DB_PATH: /data/cosmic-seeker.db
+    # No `ports:` — Caddy reaches it via the shared network alias `backend`.
+    expose:
+      - "8787"
+    networks:
+      - edge
+    volumes:
+      - cosmic-seeker-db:/data
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: cosmic-seeker-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - edge
+    depends_on:
+      - backend
+
+networks:
+  edge:
+    driver: bridge
+
+volumes:
+  cosmic-seeker-db:
+  caddy-data:
+  caddy-config:

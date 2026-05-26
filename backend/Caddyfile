@@ -1,0 +1,42 @@
+# CosmicSeeker backend — Caddy reverse proxy with automatic Let's Encrypt TLS.
+#
+# Place this file next to docker-compose.production.yml on the server. Caddy
+# resolves /etc/caddy/Caddyfile by default; bind-mount this one in.
+#
+# DNS prerequisite: an A (or AAAA) record for `cosmic.soulview.org` pointing
+# at the server's public IP. Caddy needs ports 80 + 443 open so the ACME
+# HTTP-01 challenge can complete.
+
+cosmic.soulview.org {
+	encode gzip zstd
+
+	# CosmicSeeker backend.
+	# `backend:8787` resolves via the docker-compose network alias.
+	reverse_proxy backend:8787 {
+		# Useful for IP-based rate limiting on the upstream.
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# A modest header layer — we expose JSON only, no HTML, so CSP is overkill,
+	# but HSTS + nosniff are still worth setting.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options    "nosniff"
+		Referrer-Policy            "no-referrer"
+		# CORS is enforced by the Node layer (CORS_ALLOWLIST). Don't double-write
+		# Access-Control headers here or browsers will reject the response.
+	}
+
+	# Tight per-IP rate limit at the edge so a hostile client can't drown the
+	# Node process before its own limiter kicks in. The `rate-limit` plugin is
+	# optional — comment this block out if you're running stock Caddy.
+	# rate_limit {
+	# 	zone cosmic_global {
+	# 		key {remote_host}
+	# 		events 120
+	# 		window 60s
+	# 	}
+	# }
+}

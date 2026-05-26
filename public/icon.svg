@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0040"/>
+      <stop offset="100%" stop-color="#0a0014"/>
+    </linearGradient>
+    <linearGradient id="ship" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#0052ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- stars -->
+  <g fill="#fff" opacity="0.85">
+    <rect x="60" y="80" width="4" height="4"/>
+    <rect x="430" y="120" width="4" height="4"/>
+    <rect x="160" y="180" width="4" height="4"/>
+    <rect x="380" y="240" width="4" height="4"/>
+    <rect x="80" y="320" width="4" height="4"/>
+    <rect x="220" y="60" width="2" height="2"/>
+    <rect x="120" y="420" width="2" height="2"/>
+    <rect x="400" y="380" width="2" height="2"/>
+  </g>
+  <!-- player ship (Galaxian-style) -->
+  <g transform="translate(256 296)" fill="url(#ship)">
+    <rect x="-12" y="-80" width="24" height="120"/>
+    <rect x="-80" y="-16" width="160" height="36"/>
+    <rect x="-48" y="-48" width="96" height="32"/>
+    <rect x="-6" y="-100" width="12" height="20" fill="#fff"/>
+  </g>
+  <!-- engine flame -->
+  <g transform="translate(256 350)" fill="#ffd84d">
+    <rect x="-44" y="0" width="14" height="22"/>
+    <rect x="30" y="0" width="14" height="22"/>
+  </g>
+  <!-- enemies above -->
+  <g fill="#ff3df0">
+    <rect x="120" y="60" width="40" height="40"/>
+    <rect x="240" y="40" width="40" height="40"/>
+    <rect x="360" y="60" width="40" height="40"/>
+  </g>
+</svg>

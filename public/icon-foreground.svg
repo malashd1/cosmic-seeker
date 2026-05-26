@@ -1,0 +1,34 @@
+<!-- Adaptive-icon foreground. Same hero as icon.svg minus the gradient
+     background, sized to stay inside Android's 66dp safe zone (centre 61 % of
+     a 108dp viewport). Background is supplied by ic_launcher_background. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="ship" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#0052ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Group is uniformly scaled to ~0.78 around the centre so the entire
+       hero comfortably fits inside the 66dp adaptive-icon safe zone (any
+       launcher mask — circle, squircle, teardrop — will still show it). -->
+  <g transform="translate(256 256) scale(0.78) translate(-256 -256)">
+    <!-- player ship -->
+    <g transform="translate(256 296)" fill="url(#ship)">
+      <rect x="-12" y="-80" width="24" height="120"/>
+      <rect x="-80" y="-16" width="160" height="36"/>
+      <rect x="-48" y="-48" width="96" height="32"/>
+      <rect x="-6" y="-100" width="12" height="20" fill="#fff"/>
+    </g>
+    <!-- engine flame -->
+    <g transform="translate(256 350)" fill="#ffd84d">
+      <rect x="-44" y="0" width="14" height="22"/>
+      <rect x="30" y="0" width="14" height="22"/>
+    </g>
+    <!-- enemies above -->
+    <g fill="#ff3df0">
+      <rect x="120" y="60" width="40" height="40"/>
+      <rect x="240" y="40" width="40" height="40"/>
+      <rect x="360" y="60" width="40" height="40"/>
+    </g>
+  </g>
+</svg>

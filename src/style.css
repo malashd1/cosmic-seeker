@@ -1,0 +1,329 @@
+/* CosmicSeeker — 8-bit aesthetic, modern crypto UI */
+:root {
+  --bg: #0a0014;
+  --bg-2: #110028;
+  --fg: #f5f5ff;
+  --fg-dim: #9a9ac0;
+  --accent: #00d4ff;
+  --accent-2: #ff3df0;
+  --good: #4cff7a;
+  --bad: #ff4860;
+  --warn: #ffd84d;
+  --base-blue: #0052ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background:
+    radial-gradient(ellipse at top, #1a0040 0%, var(--bg) 60%, #000 100%);
+  color: var(--fg);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  overflow: hidden;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
+  user-select: none;
+}
+
+#app {
+  position: relative;
+  width: 480px;
+  height: 960px;             /* portrait 1:2 — Seeker phone aspect */
+  margin: 8px auto;
+  border: 2px solid var(--accent);
+  box-shadow:
+    0 0 0 4px var(--bg-2),
+    0 0 40px rgba(157, 77, 255, 0.4),
+    inset 0 0 60px rgba(157, 77, 255, 0.05);
+}
+
+@media (max-width: 520px) {
+  #app { width: 100vw; height: 100vh; margin: 0; border: none; }
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  image-rendering: pixelated;
+  object-fit: contain;             /* preserve 1:2 aspect on taller phones (Seeker 1080×2400) */
+}
+
+#hud {
+  position: absolute;
+  inset: 0;                /* span full canvas so #hud-bottom can anchor to the actual bottom */
+  pointer-events: none;
+  /* `env(safe-area-inset-top)` keeps SCORE / PTS / LV out from under the
+     Android status bar when the Capacitor WebView overlays it. Falls back
+     to 8 px on devices without a notch / status area. */
+  padding: calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px));
+  font-size: 10px;
+}
+
+#hud-top, #hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: 0 0 6px var(--accent);
+  gap: 8px;
+}
+
+#points {
+  color: var(--warn);
+  text-shadow: 0 0 6px var(--warn);
+}
+
+/* Connected-wallet SKR balance. The element is hidden until a balance
+   resolves (`balance.ts` flips the `.hidden` class), so it doesn't take
+   up HUD width when there's no wallet / no SKR mint configured. */
+#skr {
+  color: #ab9ff2;                  /* Solana / Phantom-ish purple */
+  text-shadow: 0 0 6px #ab9ff2;
+}
+#skr.hidden { display: none; }
+
+#hud-bottom {
+  position: absolute;
+  bottom: 8px; left: 12px; right: 12px;
+  color: var(--good);
+  text-shadow: 0 0 6px var(--good);
+  gap: 8px;
+}
+
+/* On touch devices the bottom 220 px is the dedicated control band
+   (joystick + FIRE + BOMB). Lift the HUD bottom row above it so the
+   lives / bomb count / combo line sits flush on top of the band. */
+@media (pointer: coarse), (max-width: 520px) {
+  #hud-bottom { bottom: 230px; }
+}
+
+#bombs {
+  color: var(--warn);
+  text-shadow: 0 0 6px var(--warn);
+}
+#bombs.empty { opacity: 0.35; }
+
+#lives { color: var(--bad); text-shadow: 0 0 6px var(--bad); }
+
+/* All floating menus share the same full-canvas overlay layout. */
+#overlay, .panel {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 0, 20, 0.96);    /* almost opaque so game frame doesn't bleed through */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;          /* top-aligned scrolling for tall panels (settings) */
+  gap: 14px;
+  /* Safe-area-aware so floating panel headers don't get clipped by the
+     Android status bar when StatusBar.setOverlaysWebView({ overlay:true }). */
+  padding: calc(24px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
+  z-index: 10;
+  overflow-y: auto;
+}
+
+#overlay {
+  justify-content: center;              /* main menu stays centered */
+}
+
+#overlay.hidden, .panel.hidden {
+  display: none !important;
+}
+
+#pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 0, 20, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 9;
+}
+#pause-overlay.hidden { display: none; }
+#pause-overlay h2 {
+  font-size: 20px;
+  color: var(--warn);
+  text-shadow: 0 0 14px var(--warn);
+  letter-spacing: 2px;
+}
+
+#overlay h1 {
+  font-size: 28px;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+.tag {
+  color: var(--fg-dim);
+  font-size: 9px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+button {
+  font-family: inherit;
+  font-size: 11px;
+  padding: 10px 18px;
+  background: var(--bg-2);
+  color: var(--fg);
+  border: 2px solid var(--accent);
+  cursor: pointer;
+  transition: transform 0.05s, background 0.1s, box-shadow 0.1s;
+  min-width: 220px;
+  text-align: center;
+}
+
+button:hover {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 16px var(--accent);
+}
+
+button:active { transform: translateY(2px); }
+
+button.primary {
+  border-color: var(--base-blue);
+  color: var(--base-blue);
+}
+button.primary:hover { background: var(--base-blue); color: var(--fg); box-shadow: 0 0 16px var(--base-blue); }
+
+button.danger { border-color: var(--bad); color: var(--bad); }
+button.danger:hover { background: var(--bad); color: var(--fg); box-shadow: 0 0 16px var(--bad); }
+
+#wallet-status {
+  font-size: 9px;
+  color: var(--fg-dim);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Level-clear + Game-over result screens — clean dedicated overlays,
+   distinct from the main title menu. */
+#clear-screen, #gameover-screen {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 0, 20, 0.94);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  z-index: 11;
+}
+#clear-screen.hidden, #gameover-screen.hidden { display: none; }
+
+#clear-screen h2, #gameover-screen h2 {
+  font-size: 22px;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+#clear-screen h2  { color: var(--good); text-shadow: 0 0 14px var(--good); }
+#gameover-screen h2 { color: var(--bad);  text-shadow: 0 0 14px var(--bad); }
+
+#clear-summary, #gameover-summary {
+  font-size: 10px;
+  color: var(--fg-dim);
+  text-align: center;
+  line-height: 1.7;
+  padding: 8px 14px;
+  border: 1px dashed var(--bg-2);
+  max-width: 340px;
+}
+#clear-summary strong, #gameover-summary strong { color: var(--warn); }
+
+#wallet-status.connected { color: var(--good); }
+
+/* Shop grid */
+#shop .shop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+}
+
+#shop .item {
+  border: 2px solid var(--accent);
+  padding: 10px;
+  background: var(--bg-2);
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#shop .item .name { color: var(--accent); }
+#shop .item .stats { color: var(--fg-dim); line-height: 1.6; }
+#shop .item .prices { display: flex; gap: 6px; flex-wrap: wrap; }
+#shop .item button { min-width: 0; padding: 4px 8px; font-size: 8px; flex: 1; }
+
+#shop h2, #leaderboard h2 {
+  font-size: 16px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+#shop .tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+#shop .tab-bar button { min-width: 0; padding: 6px 10px; font-size: 8px; }
+#shop .tab-bar button.active { background: var(--accent); color: var(--bg); }
+
+/* Leaderboard rows */
+#leaderboard table { width: 100%; max-width: 420px; border-collapse: collapse; font-size: 9px; }
+#leaderboard th, #leaderboard td { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--bg-2); }
+#leaderboard th { color: var(--accent); }
+#leaderboard tr.me td { color: var(--good); }
+
+/* Mobile touch controls */
+#touch-controls {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: none;
+  justify-content: space-between;
+  padding: 20px;
+  pointer-events: none;
+}
+
+#touch-controls .pad {
+  pointer-events: auto;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(0, 212, 255, 0.2);
+  border: 2px solid var(--accent);
+}
+
+@media (max-width: 520px) and (hover: none) {
+  #touch-controls { display: flex; }
+}
+
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0,0,0,0) 0px,
+    rgba(0,0,0,0) 2px,
+    rgba(0,0,0,0.18) 3px
+  );
+  mix-blend-mode: multiply;
+  z-index: 5;
+}

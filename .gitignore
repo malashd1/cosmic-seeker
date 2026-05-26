@@ -1,0 +1,24 @@
+node_modules/
+dist/
+dist-release/
+*.db
+*.db-journal
+
+# Env files — only `.env.example` is committed
+.env
+.env.*
+!.env.example
+!.env.production.template
+# Legacy EVM workspace (kept for audit reference; ignore its build artifacts).
+legacy-evm/out/
+legacy-evm/cache/
+legacy-evm/broadcast/
+legacy-evm/lib/
+# Anchor build outputs.
+program/target/
+program/.anchor/
+program/test-ledger/
+# Release-APK keystore — keep it OUT of the repo.
+*.jks
+*.keystore
+.DS_Store

@@ -1,0 +1,55 @@
+name: frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'backend/**'
+      - 'index.html'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'backend/**'
+      - 'index.html'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - '.github/workflows/frontend.yml'
+
+jobs:
+  game:
+    name: game · typecheck + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+
+  backend:
+    name: backend · typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci || npm install
+      - name: Typecheck
+        run: npx tsc --noEmit
