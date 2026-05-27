@@ -157,8 +157,10 @@ export function renderSettings(root: HTMLElement, ctx: SettingsCtx, onClose: () 
     brand:        'CosmicSeeker',
     token:        '$SKR',
     chain:        'Solana',
-    supportEmail: 'hello@cosmicseeker.xyz',
+    supportEmail: '',
     website:      'https://cosmic.soulview.org',
+    publisher:    'Chisoft',
+    publisherUrl: 'https://chisoft.co',
     effectiveDate: '2026-05-20',
   }));
 

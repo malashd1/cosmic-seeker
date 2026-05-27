@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.soulview.cosmic",
+      "sha256_cert_fingerprints": [
+        "D2:6E:DA:8F:3B:CE:A3:21:A8:E7:BB:43:86:2C:E2:6F:43:1A:33:08:9D:57:FD:BF:20:73:F6:FF:72:CE:A7:EE"
+      ]
+    }
+  }
+]

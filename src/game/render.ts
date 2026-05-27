@@ -7,6 +7,19 @@ const H = 960;
 const CONTROL_BAND_H = 220;
 const PLAYABLE_BOTTOM = H - CONTROL_BAND_H;
 
+// On touch devices the dedicated CSS control-band div (touchControls.ts)
+// renders its own purple top accent that anchors precisely to the
+// joystick / FIRE / BOMB area. Drawing the canvas cyan playable-floor
+// line on top of that gives the player TWO parallel horizontal lines
+// because the canvas is `object-fit: contain` letterboxed and the DOM
+// band is anchored to the viewport bottom — the two never line up on
+// non-2:1 phone screens. Suppress the canvas line on touch layouts.
+const IS_TOUCH_LAYOUT =
+  typeof window !== 'undefined' &&
+  (matchMedia('(hover: none) and (pointer: coarse)').matches
+    || matchMedia('(max-width: 520px)').matches
+    || 'ontouchstart' in window);
+
 // ── Boss sprite atlas ──────────────────────────────────────────────
 // public/sprites/bosses.png is a 320×128 PNG containing 10 boss sprites
 // arranged 5 across × 2 down. Each cell is 64×64.
@@ -154,12 +167,16 @@ export class Renderer {
 
     // Playable-area floor — cyan line at PLAYABLE_BOTTOM so the player
     // can see where the no-fly zone (touch-controls band) starts.
-    ctx.save();
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = '#00d4ff';
-    ctx.fillStyle = 'rgba(0, 212, 255, 0.6)';
-    ctx.fillRect(0, PLAYABLE_BOTTOM - 1, W, 2);
-    ctx.restore();
+    // Skipped on touch layouts where the DOM control-band already paints
+    // its own (correctly-anchored) top accent line; see IS_TOUCH_LAYOUT.
+    if (!IS_TOUCH_LAYOUT) {
+      ctx.save();
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#00d4ff';
+      ctx.fillStyle = 'rgba(0, 212, 255, 0.6)';
+      ctx.fillRect(0, PLAYABLE_BOTTOM - 1, W, 2);
+      ctx.restore();
+    }
   }
 
   drawPlayer(p: PlayerState) {

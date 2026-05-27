@@ -22,6 +22,10 @@ export interface LegalBrand {
   supportEmail: string;
   /** Marketing URL — leave blank to omit. */
   website: string;
+  /** Publisher / developer studio name, e.g. `Chisoft`. Leave blank to omit. */
+  publisher?: string;
+  /** Publisher / developer website, e.g. `https://chisoft.co`. Leave blank to omit. */
+  publisherUrl?: string;
   /** Effective date stamped on every doc (ISO YYYY-MM-DD). */
   effectiveDate: string;
 }
@@ -168,6 +172,11 @@ function ul(items: string[]) {
 function footer(brand: LegalBrand) {
   const bits: string[] = [];
   bits.push(`Effective ${brand.effectiveDate}.`);
+  if (brand.publisher && brand.publisherUrl) {
+    bits.push(`Published by <a style="color:#00d4ff" href="${brand.publisherUrl}" target="_blank" rel="noopener">${brand.publisher}</a>`);
+  } else if (brand.publisher) {
+    bits.push(`Published by ${brand.publisher}`);
+  }
   if (brand.supportEmail) bits.push(`Contact: <a style="color:#00d4ff" href="mailto:${brand.supportEmail}">${brand.supportEmail}</a>`);
   if (brand.website) bits.push(`<a style="color:#00d4ff" href="${brand.website}" target="_blank" rel="noopener">${brand.website}</a>`);
   return `<div style="margin-top:18px;padding-top:10px;border-top:1px solid #2a1a4a;color:#7a7a9a;font-size:9px">${bits.join(' · ')}</div>`;
@@ -287,8 +296,18 @@ function aboutDoc(b: LegalBrand): string {
   const stack = (b.chain.toLowerCase() === 'solana')
     ? 'Vite, TypeScript, Canvas 2D, Capacitor, Anchor, Solana web3.js, Mobile Wallet Adapter'
     : 'Vite, TypeScript, Canvas 2D, viem, wagmi, Foundry';
+  const publisherBlock = b.publisher
+    ? [
+        h2('Publisher'),
+        p(b.publisherUrl
+          ? `Published by <strong>${b.publisher}</strong> — <a style="color:#00d4ff" href="${b.publisherUrl}" target="_blank" rel="noopener">${b.publisherUrl.replace(/^https?:\/\//, '')}</a>. Independent game studio based in Prague, Czech Republic.`
+          : `Published by <strong>${b.publisher}</strong>.`),
+      ].join('')
+    : '';
   return [
     p(`${b.brand} — a Galaxian-inspired arcade shooter with a fully on-chain economy.`),
+
+    publisherBlock,
 
     h2('Tech'),
     p(stack),
@@ -307,7 +326,9 @@ function aboutDoc(b: LegalBrand): string {
     p(`Built on top of the work of countless open-source authors. ${b.chain} core, Anchor, Capacitor, Solana Mobile, Vite — none of this exists without them.`),
 
     h2('Bug reports'),
-    p(`Send a wallet address, screenshot, and "what happened" to ${b.supportEmail || 'the support address on the website'}. We triage in the order we get them.`),
+    p(b.supportEmail
+      ? `Send a wallet address, screenshot, and "what happened" to ${b.supportEmail}. We triage in the order we get them.`
+      : `File issues at ${b.website || 'the project repository'}. Include wallet address, screenshot, and "what happened". We triage in the order we get them.`),
 
     footer(b),
   ].join('');

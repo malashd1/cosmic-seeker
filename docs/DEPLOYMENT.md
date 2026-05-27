@@ -243,7 +243,7 @@ If any step is red, see the troubleshooting table in
 | Backend bug | `docker compose -f docker-compose.production.yml restart backend` — SQLite state survives. If the bug is in the schema, restore from the encrypted nightly dump. |
 | Program bug, treasury still safe | Stop the frontend from sending claims by setting `VITE_COSMIC_PROGRAM_ID_TEST=` empty and re-publishing the build. Backend keeps signing off-chain claim payloads as POINTS only; on-chain `claim_reward` becomes unreachable. |
 | Program bug, exploitable | Pause the backend signer (rotate `SIGNER_KEYPAIR_BASE58`) — without a valid signature, `claim_reward` reverts. The treasury vault stays intact behind the Config PDA. |
-| Compromised keystore | You cannot rotate within the same `applicationId`. Mint a fresh keystore, bump `applicationId` (e.g. `xyz.cosmicseeker.app2`), publish as a new listing. Communicate the migration to players. |
+| Compromised keystore | You cannot rotate within the same `applicationId`. Mint a fresh keystore, bump `applicationId` (e.g. `org.soulview.cosmic2`), publish as a new listing. Communicate the migration to players. |
 
 ## 10. Cost estimate (devnet → mainnet)
 

@@ -35,7 +35,7 @@ keytool -genkeypair -v \
   keystore password if your secret store prefers single-secret hygiene.
 - A "first and last name / org / city / country" DN. Anything reasonable
   works; the Play / Seeker store identity comes from the bundle id
-  (`xyz.cosmicseeker.app`), not the cert subject.
+  (`org.soulview.cosmic`), not the cert subject.
 
 Verify it's readable:
 
@@ -94,7 +94,7 @@ adb logcat | grep -i 'cosmic\|capacitor\|skr'
 ## 6 · Rotate
 
 If a keystore leaks, **you cannot rotate within the same app id.** Mint a
-fresh keystore + bump the bundle id (e.g. `xyz.cosmicseeker.app2`),
+fresh keystore + bump the bundle id (e.g. `org.soulview.cosmic2`),
 publish as a new listing, and deprecate the old one. Plan accordingly.
 
 ## CI hook (sketch)
