@@ -13,6 +13,20 @@ const DEV_ED25519_SEED = new Uint8Array(32).fill(0x42);
 const DEV_ED25519_KP = nacl.sign.keyPair.fromSeed(DEV_ED25519_SEED);
 const DEV_ED25519_BASE58 = bs58.encode(DEV_ED25519_KP.secretKey);
 
+// Permanently denylisted ed25519 pubkeys. Any pubkey that was ever published
+// in plaintext to a public git repo (even briefly) is treated as compromised
+// forever — bots scrape pushes within seconds, and pubkeys cannot be "rotated
+// back". The boot guard below refuses to start if SIGNER_KEYPAIR_BASE58
+// resolves to any of these, in both dev AND prod.
+//
+//   4mXWAav176RnSBYKiHA1t2gwebkCbYUD1YWmnu2UaP9F
+//     Was committed to backend/.env.production.template before being scrubbed.
+//     History rewrite + force-push followed, but the key MUST be considered
+//     burned. Never fund the address; never reuse the secret.
+const BURNED_SIGNER_PUBKEYS: ReadonlySet<string> = new Set([
+  '4mXWAav176RnSBYKiHA1t2gwebkCbYUD1YWmnu2UaP9F',
+]);
+
 function readBool(name: string, def = false): boolean {
   const v = process.env[name];
   if (v === undefined) return def;
@@ -109,6 +123,13 @@ export function loadEnv(): Env {
   const signerSecretKey = parseEd25519SecretBase58('SIGNER_KEYPAIR_BASE58', signerKeypairBase58);
   const signerPublicKey = signerSecretKey.slice(32);
   const signerPublicKeyBase58 = bs58.encode(signerPublicKey);
+
+  // Hard-fail in BOTH dev and prod if the configured signer matches a pubkey
+  // that was previously exposed. This stops anyone from accidentally re-using
+  // a burned keypair lifted from git history archives.
+  if (BURNED_SIGNER_PUBKEYS.has(signerPublicKeyBase58)) {
+    fail(`SIGNER_KEYPAIR_BASE58 resolves to a permanently burned pubkey (${signerPublicKeyBase58}). This key was exposed publicly and must never be used again. Generate a fresh keypair with \`solana-keygen new\`.`);
+  }
 
   if (isProd) {
     if (signerKeypairBase58 === DEV_ED25519_BASE58) fail('SIGNER_KEYPAIR_BASE58 is the well-known dev ed25519 key. Provision a real one.');
