@@ -1,7 +1,7 @@
 {
   "name": "CosmicSeeker",
   "short_name": "CosmicSeeker",
-  "description": "Galaxian-style arcade shooter on Base. 100 levels, on-chain rewards in $SKR.",
+  "description": "Galaxian-style arcade shooter for Solana Mobile / Seeker. 100 levels, on-chain rewards in $SKR. Published by Chisoft (https://chisoft.co/).",
   "id": "/",
   "start_url": "/",
   "scope": "/",

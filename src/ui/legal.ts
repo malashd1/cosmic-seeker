@@ -173,12 +173,14 @@ function footer(brand: LegalBrand) {
   const bits: string[] = [];
   bits.push(`Effective ${brand.effectiveDate}.`);
   if (brand.publisher && brand.publisherUrl) {
-    bits.push(`Published by <a style="color:#00d4ff" href="${brand.publisherUrl}" target="_blank" rel="noopener">${brand.publisher}</a>`);
+    // Developer / publisher line — comes first after the date so a reviewer
+    // skimming the footer sees the studio attribution before any product URL.
+    bits.push(`Developer: <a style="color:#00d4ff" href="${brand.publisherUrl}" target="_blank" rel="noopener">${brand.publisher} · ${brand.publisherUrl.replace(/^https?:\/\//, '')}</a>`);
   } else if (brand.publisher) {
-    bits.push(`Published by ${brand.publisher}`);
+    bits.push(`Developer: ${brand.publisher}`);
   }
   if (brand.supportEmail) bits.push(`Contact: <a style="color:#00d4ff" href="mailto:${brand.supportEmail}">${brand.supportEmail}</a>`);
-  if (brand.website) bits.push(`<a style="color:#00d4ff" href="${brand.website}" target="_blank" rel="noopener">${brand.website}</a>`);
+  if (brand.website) bits.push(`App: <a style="color:#00d4ff" href="${brand.website}" target="_blank" rel="noopener">${brand.website.replace(/^https?:\/\//, '')}</a>`);
   return `<div style="margin-top:18px;padding-top:10px;border-top:1px solid #2a1a4a;color:#7a7a9a;font-size:9px">${bits.join(' · ')}</div>`;
 }
 
