@@ -9,6 +9,7 @@
 
 import { getWallets } from '@wallet-standard/app';
 import type { Wallet, WalletAccount } from '@wallet-standard/base';
+import { mwaReady } from './mwa';
 
 type SolanaAddress = string;
 
@@ -57,6 +58,44 @@ function pickSolanaWallet(): Wallet | null {
   return wallets.find((w) => w.chains.some((c) => c.startsWith('solana:'))) ?? null;
 }
 
+/**
+ * Wait until a Solana wallet (preferably MWA on Seeker) is registered. Used
+ * by `connect()` to close the race window where the user taps CONNECT
+ * before `registerMwa()` has finished. We:
+ *   1. Await the static `mwaReady` promise — guarantees `registerMwa` was
+ *      at least invoked. On Seeker this is usually enough.
+ *   2. Subscribe to `getWallets().on('register', …)` and resolve when the
+ *      MWA wallet (or any other Solana wallet) actually shows up in the
+ *      registry. Some wallets register on a microtask AFTER registerMwa
+ *      returns; this catches that.
+ *   3. Cap the wait at `timeoutMs` so we don't hang forever on a desktop
+ *      where no Solana wallet will ever be installed.
+ */
+async function awaitSolanaWallet(timeoutMs = 1500): Promise<Wallet | null> {
+  // Step 1 — let the static MWA registration settle.
+  try { await mwaReady; } catch { /* */ }
+  let found = pickSolanaWallet();
+  if (found) return found;
+
+  // Step 2 — listen for `register` events from any wallet that arrives
+  // late (some inject themselves on a setTimeout after page load).
+  return new Promise<Wallet | null>((resolve) => {
+    let done = false;
+    const wallets = getWallets();
+    const off = wallets.on('register', () => {
+      if (done) return;
+      const f = pickSolanaWallet();
+      if (f) { done = true; off(); resolve(f); }
+    });
+    setTimeout(() => {
+      if (done) return;
+      done = true;
+      off();
+      resolve(pickSolanaWallet());
+    }, timeoutMs);
+  });
+}
+
 async function publicKeyToBase58(raw: Uint8Array): Promise<string> {
   const { PublicKey } = await import('@solana/web3.js');
   return new PublicKey(raw).toBase58();
@@ -65,7 +104,11 @@ async function publicKeyToBase58(raw: Uint8Array): Promise<string> {
 // ── Connect / disconnect ───────────────────────────────────────────────
 
 export async function connect(): Promise<SolanaAddress | null> {
-  const w = pickSolanaWallet();
+  // Race-safe wallet discovery — see `awaitSolanaWallet`. On Seeker this
+  // returns immediately because MWA is registered synchronously at module
+  // load; on cold desktop it gives any late-binding extension up to 1.5 s
+  // to declare itself before we surrender.
+  const w = await awaitSolanaWallet();
   if (!w) {
     alert('No Solana wallet detected. Install Phantom (mobile/desktop), Backpack, or use Seed Vault on a Seeker phone.');
     return null;
@@ -142,7 +185,7 @@ export async function restoreSession(): Promise<SolanaAddress | null> {
 }
 
 async function silentReconnect() {
-  const w = pickSolanaWallet();
+  const w = await awaitSolanaWallet();
   if (!w) return;
   const features = w.features as any;
   // Reuse cached MWA authorization if available — calling `standard:connect`

@@ -6,33 +6,13 @@ import './style.css';
 import { Buffer } from 'buffer';
 (globalThis as { Buffer?: typeof Buffer }).Buffer ??= Buffer;
 // ── Mobile Wallet Adapter registration ──────────────────────────────────
-// Same flow as classic_games: register MWA as a Wallet Standard wallet at
-// boot so the rest of the app can discover + sign through any Solana
-// wallet (Phantom mobile, Backpack, Seed Vault on Seeker) via the same
-// uniform API. No-op on desktop where MWA has no Android intent bridge.
-(async () => {
-  try {
-    const {
-      registerMwa,
-      createDefaultAuthorizationCache,
-      createDefaultChainSelector,
-      createDefaultWalletNotFoundHandler,
-    } = await import('@solana-mobile/wallet-standard-mobile');
-    registerMwa({
-      appIdentity: {
-        name: 'CosmicSeeker',
-        uri: 'https://cosmic.soulview.org',
-        icon: '/icon-512.png',
-      },
-      chains: ['solana:mainnet'],
-      authorizationCache: createDefaultAuthorizationCache(),
-      chainSelector: createDefaultChainSelector(),
-      onWalletNotFound: createDefaultWalletNotFoundHandler(),
-    });
-  } catch (e) {
-    console.warn('[wallet] MWA registerMwa skipped:', e);
-  }
-})();
+// Importing './web3/mwa' synchronously here guarantees `registerMwa` runs
+// before main.ts touches the wallet button. The Solana dApp Store reviewer
+// taps CONNECT WALLET on a fresh Seeker within seconds of opening the app;
+// a previous async-IIFE / dynamic-import setup left a race window where
+// the wallet wasn't yet in `getWallets().get()` and the reviewer saw
+// "No Solana wallet detected" → "SMS Integration Failure" rejection.
+import './web3/mwa';
 import { Game } from './game/Game';
 import { renderShop } from './ui/shop';
 import { renderLeaderboard } from './ui/leaderboard';
