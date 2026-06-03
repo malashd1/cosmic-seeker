@@ -133,10 +133,6 @@ if (existsSync(androidRes)) {
     console.log(`✓ mipmap-${b.dpi}/{ic_launcher_foreground,ic_launcher,ic_launcher_round}.png ${b.px}×${b.px}`);
   }
 
-  // Brand background colour (already set, but keep idempotent).
-  const valuesDir = join(androidRes, 'values');
-  if (!existsSync(valuesDir)) mkdirSync(valuesDir, { recursive: true });
-  writeFileSync(join(valuesDir, 'ic_launcher_background.xml'),
     `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n  <color name="ic_launcher_background">${BRAND_BG}</color>\n</resources>\n`);
   console.log('✓ values/ic_launcher_background.xml');
 }
