@@ -21,8 +21,8 @@
     "path": "/Users/malashd/Documents/classic_games/classic-upload.jks",
     "alias": "classic"
   },
-  "appVersionName": "20",
-  "appVersionCode": 20,
+  "appVersionName": "21",
+  "appVersionCode": 21,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://cosmic.soulview.org/manifest.webmanifest",
