@@ -24,7 +24,15 @@ export type SkrBalanceState =
   | { kind: 'error';  message: string };
 
 const listeners = new Set<(s: SkrBalanceState) => void>();
-let _state: SkrBalanceState = { kind: 'no-wallet' };
+// Initial state — `pending` if a wallet session was restored from
+// localStorage (HUD will already say "Connected" at this point), so
+// the shop chip doesn't briefly say "Wallet: not connected" before
+// the first balance refresh resolves. Falls back to `no-wallet` on
+// a truly cold boot.
+let _state: SkrBalanceState =
+  (typeof window !== 'undefined' && walletAddress())
+    ? { kind: 'pending' }
+    : { kind: 'no-wallet' };
 
 export function getSkrBalanceState(): SkrBalanceState { return _state; }
 

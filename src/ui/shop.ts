@@ -104,8 +104,22 @@ export function renderShop(
   root.appendChild(skrBar);
   const offSkr = onSkrBalanceChange((state) => {
     const txt = formatSkrBalance(state);
-    skrBar.textContent = txt || 'Wallet: not connected';
-    skrBar.style.opacity = txt ? '1' : '0.5';
+    // Don't show "Wallet: not connected" if the HUD already says we're
+    // connected — that mismatch was the root of the user-visible bug
+    // ("HUD shows connected, shop says not"). In that case the SKR
+    // balance is just still loading (state is 'pending' / no-wallet
+    // before the first refresh fires), so display a loading marker
+    // instead of falsely claiming no wallet.
+    if (txt) {
+      skrBar.textContent = txt;
+      skrBar.style.opacity = '1';
+    } else if (walletAddress()) {
+      skrBar.textContent = 'SKR …';
+      skrBar.style.opacity = '0.7';
+    } else {
+      skrBar.textContent = 'Wallet: not connected';
+      skrBar.style.opacity = '0.5';
+    }
   });
   // Fire one refresh on open so the chip is current the instant the
   // panel appears (the 30 s watcher might be 29 s into its cycle).

@@ -63,11 +63,26 @@ export async function signAndSendTx(
   opts: ConfirmOptions = { commitment: 'confirmed' },
 ): Promise<string> {
   const conn = getConnection(opts.commitment ?? 'confirmed');
+
+  // Wallet binding may be partially stale after a page reload: `walletAddress()`
+  // is restored synchronously from localStorage (so the HUD shows "Connected"
+  // straight away) but `connectedWallet()` / `connectedAccount()` only attach
+  // once `silentReconnect()` finishes. Without auto-recovery, the shop's first
+  // BUY tap throws "Wallet session lost — please reconnect." even though the
+  // HUD still claims connected. Drive `connect()` here so MWA can hand back a
+  // wallet handle (silently when its auth cache is still warm, or with the
+  // standard prompt if not).
+  const { connect } = await import('./wallet');
+  let wallet = connectedWallet();
+  let account = connectedAccount();
+  if (!wallet || !account) {
+    await connect();
+    wallet = connectedWallet();
+    account = connectedAccount();
+  }
+
   const payer = walletPubkey();
   if (!payer) throw new Error('No wallet connected. Tap CONNECT WALLET first.');
-
-  const wallet = connectedWallet();
-  const account = connectedAccount();
   if (!wallet || !account) throw new Error('Wallet session lost — please reconnect.');
 
   // Build v0 tx.
