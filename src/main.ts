@@ -18,7 +18,7 @@ import { renderShop } from './ui/shop';
 import { renderLeaderboard } from './ui/leaderboard';
 import { renderMissions } from './ui/missions';
 import { renderSettings, applyStoredSettings } from './ui/settings';
-import { connect, walletAddress, onAddressChange, restoreSession } from './web3/wallet';
+import { connect, disconnect, walletAddress, onAddressChange, restoreSession } from './web3/wallet';
 import { postRunToBackend, claimRewards, getHighestLevel, creditPoints } from './web3/api';
 import { refreshSkrBalance, startSkrBalanceWatcher } from './web3/balance';
 import { audio } from './game/audio';
@@ -198,10 +198,7 @@ addEventListener('keydown', (e) => {
 addEventListener('pointerdown', () => audio.prime(), { once: true });
 addEventListener('keydown', () => audio.prime(), { once: true });
 
-btnConnect.onclick = async () => {
-  // Guard against double-tap: the wallet picker modal can be hidden
-  // behind a wallet's permission prompt on Android, and a second click
-  // before the first promise resolves would stack two transact() calls.
+async function runConnect() {
   if (btnConnect.disabled) return;
   btnConnect.disabled = true;
   const origLabel = btnConnect.textContent;
@@ -228,7 +225,88 @@ btnConnect.onclick = async () => {
   } finally {
     btnConnect.disabled = false;
   }
+}
+
+/** Pop-up shown when the user taps WALLET ✓ while connected. Lets them
+ *  Disconnect (clear session entirely), Switch (disconnect → reconnect
+ *  with the wallet picker, lets them pick a different account/wallet
+ *  app), or close the menu. */
+function openWalletMenu() {
+  const addr = walletAddress();
+  if (!addr) { void runConnect(); return; }
+  // Build an overlay + a centred card. Same look as legal modals
+  // so it fits the rest of the UI.
+  const overlay = document.createElement('div');
+  Object.assign(overlay.style, {
+    position: 'fixed', inset: '0', zIndex: '9999',
+    background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    fontFamily: '"Press Start 2P", monospace',
+  } as Partial<CSSStyleDeclaration>);
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  const card = document.createElement('div');
+  Object.assign(card.style, {
+    background: '#0a0014', border: '2px solid #9d4dff',
+    boxShadow: '0 0 30px rgba(157,77,255,0.4)',
+    width: '100%', maxWidth: '360px',
+    padding: '18px 20px 16px',
+    display: 'flex', flexDirection: 'column', gap: '12px',
+  } as Partial<CSSStyleDeclaration>);
+
+  const title = document.createElement('div');
+  title.style.cssText = 'color:#9d4dff;font-size:11px;letter-spacing:1px';
+  title.textContent = 'WALLET';
+  card.appendChild(title);
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'color:#9a9ac0;font-size:9px;line-height:1.5;word-break:break-all';
+  sub.textContent = `${addr.slice(0, 6)}…${addr.slice(-6)}`;
+  card.appendChild(sub);
+
+  const mkRow = (label: string, color: string, onClick: () => void) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = `width:100%;padding:10px 12px;font-size:9px;color:${color};border-color:${color};background:transparent`;
+    b.onclick = onClick;
+    return b;
+  };
+
+  card.appendChild(mkRow('CHANGE WALLET', '#00d4ff', async () => {
+    close();
+    audio.play('menu');
+    try { await disconnect(); } catch { /* */ }
+    await runConnect();
+  }));
+  card.appendChild(mkRow('DISCONNECT', '#ff4860', async () => {
+    close();
+    audio.play('menu');
+    try { await disconnect(); } catch { /* */ }
+    walletStatus.textContent = '';
+    walletStatus.classList.remove('connected');
+    btnConnect.textContent = 'CONNECT WALLET';
+  }));
+  card.appendChild(mkRow('CANCEL', '#9a9ac0', close));
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+}
+
+btnConnect.onclick = () => {
+  // While connected the button doubles as a wallet-menu trigger.
+  // When disconnected it runs the connect flow directly.
+  if (walletAddress()) openWalletMenu();
+  else void runConnect();
 };
+// The HUD's wallet-status text is also clickable while connected — same
+// menu — so users who don't see the menu button immediately can tap the
+// address line they're looking at.
+walletStatus.style.cursor = 'pointer';
+walletStatus.addEventListener('click', () => {
+  if (walletAddress()) openWalletMenu();
+});
 
 btnShop.onclick = () => {
   openPanel(shopEl, () => renderShop(shopEl, {
