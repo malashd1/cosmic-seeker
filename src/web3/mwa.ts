@@ -25,7 +25,11 @@ import {
 
 export const MWA_APP_URI  = 'https://cosmic.soulview.org';
 export const MWA_APP_NAME = 'CosmicSeeker';
-export const MWA_APP_ICON = `${MWA_APP_URI}/icon-512.png`;
+// MWA spec requires `icon` to be a RELATIVE URI resolved against `uri`. An
+// absolute URL ("https://…/icon-512.png") makes the wallet adapter reject
+// the connect with "when specified, identity.icon must be a relative URI"
+// — confirmed by user report on a Seeker phone running v17.
+export const MWA_APP_ICON = '/icon-512.png';
 
 /** True once `registerMwa` has been invoked successfully. */
 let _registered = false;
