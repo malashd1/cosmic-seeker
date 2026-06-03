@@ -42,8 +42,10 @@ export function spawnBoss(kind: BossKind, level: number, hpMul: number): Boss {
     kind,
     x: 240, y: 90,
     vx: speedBoost,
-    hp: Math.ceil(spec.hp * hpMul),
-    maxHp: Math.ceil(spec.hp * hpMul),
+    // round + min-1 for the same reason as regular enemies — `ceil` would
+    // bump even a 1× boss hpMul to `spec.hp + 1`.
+    hp: Math.max(1, Math.round(spec.hp * hpMul)),
+    maxHp: Math.max(1, Math.round(spec.hp * hpMul)),
     w: Math.round(110 * sizeBoost), h: Math.round(64 * sizeBoost),
     color: COLORS[kind],
     phase: 0,

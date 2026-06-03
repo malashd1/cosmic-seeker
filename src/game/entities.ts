@@ -94,8 +94,12 @@ export function spawnEnemy(
     spec,
     x, y,
     vx: 0, vy: spec.speed * speedMul * 0.5,
-    hp: Math.ceil(spec.hp * hpMul),
-    maxHp: Math.ceil(spec.hp * hpMul),
+    // `round` (not `ceil`) so a multiplier of e.g. 1.05 doesn't jump a
+    // 1-HP spec straight to 2 (which is what made L2 grunts feel like
+    // boss enemies). `max(1, …)` keeps the floor at 1 — enemies never
+    // spawn dead.
+    hp: Math.max(1, Math.round(spec.hp * hpMul)),
+    maxHp: Math.max(1, Math.round(spec.hp * hpMul)),
     // Tight initial cooldown so enemies open fire ~0.3 s after they reach the
     // formation, not 2-3 s. The previous formula used `1/fireRate + 0.5`
     // which meant a grunt (fireRate 0.5) waited 2.5 s before the first shot —

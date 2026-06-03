@@ -26,10 +26,32 @@ export interface DifficultyMods {
   rewardMul: number;
 }
 
+/**
+ * Enemy HP multiplier — piecewise linear so progression is explicit and
+ * player-readable instead of opaquely curved through smoothstep+ceil.
+ *
+ *   L1   → 1.0×   (spec HP, no boost)
+ *   L20  → 2.0×   (double from L1)
+ *   L50  → 3.0×   (triple from L1)
+ *   L>50 → 3.0×   capped — higher tiers bring tougher enemy KINDS
+ *                 (sniper, splitter, juggernaut etc.) so the multiplier
+ *                 doesn't have to keep climbing as well.
+ *
+ * Used in place of the old `1 + d * 3.5` smoothstep, which combined with
+ * `Math.ceil` at the call-site spawned 2-HP grunts from L2 onwards (any
+ * multiplier > 1.0 ceils to 2 for a spec.hp=1 enemy).
+ */
+export function hpMultFor(level: number): number {
+  if (level <= 1)  return 1;
+  if (level <= 20) return 1 + (level - 1)  / 19;        // L1=1, L20=2
+  if (level <= 50) return 2 + (level - 20) / 30;        // L20=2, L50=3
+  return 3;                                             // L>50 capped
+}
+
 export function modsFor(level: number): DifficultyMods {
   const d = difficultyFor(level);
   return {
-    hp: 1 + d * 3.5,
+    hp: hpMultFor(level),
     speed: 0.9 + d * 1.1,
     // Bumped base from 0.8 → 1.3 so even tutorial-tier grunts (spec.fireRate
     // 0.5) shoot at ~0.65 rps from the get-go. The previous 0.4 rps meant
