@@ -26,12 +26,24 @@ export function attachTouchControls(canvas: HTMLCanvasElement, input: InputContr
     zIndex: '6',
   } as Partial<CSSStyleDeclaration>);
 
+  // Phones with gesture-nav (Android ≥ 10) and the Seeker home-bar both
+  // reserve ~36-48px at the viewport bottom. Without compensating for
+  // env(safe-area-inset-bottom), the joystick + FIRE/BOMB drift behind
+  // the system bar and the joystick effectively goes "off screen".
+  // Baseline raised so even devices with zero inset have comfortable
+  // thumb clearance.
+  const SAFE_BOTTOM    = 'env(safe-area-inset-bottom, 0px)';
+  const BAND_BASELINE  = 28;                 // px the band lifts above the gesture bar
+  const JOY_BASELINE   = BAND_BASELINE + 60; // joystick centred ~half-band-up
+  const BTN_BASELINE   = BAND_BASELINE + 78; // fire/bomb a touch higher than joystick centre
+
   // ---- Control band (visual separator between play-field and gamepad) ----
   // Player ship is bounded above this band; enemies despawn before entering it.
   const band = document.createElement('div');
   Object.assign(band.style, {
     position: 'absolute',
-    left: '0', right: '0', bottom: '0',
+    left: '0', right: '0',
+    bottom: `calc(${SAFE_BOTTOM} + ${BAND_BASELINE}px)`,
     height: '220px',
     background: 'linear-gradient(180deg, rgba(13,5,36,0) 0%, rgba(13,5,36,0.55) 18%, rgba(13,5,36,0.85) 100%)',
     borderTop: '2px solid rgba(157, 77, 255, 0.4)',
@@ -44,7 +56,8 @@ export function attachTouchControls(canvas: HTMLCanvasElement, input: InputContr
   const joy = document.createElement('div');
   Object.assign(joy.style, {
     position: 'absolute',
-    left: '24px', bottom: '40px',
+    left: '24px',
+    bottom: `calc(${SAFE_BOTTOM} + ${JOY_BASELINE}px)`,
     width: '120px', height: '120px',
     borderRadius: '50%',
     background: 'rgba(0, 212, 255, 0.08)',
@@ -69,8 +82,8 @@ export function attachTouchControls(canvas: HTMLCanvasElement, input: InputContr
   // ---- right-side action buttons (side-by-side, FIRE rightmost) ----
   //   [ BOMB ]  [ FIRE ]
   // Both anchored to the same bottom so they read as a row.
-  const fireBtn = mkButton('FIRE', '#4cff7a', { right: '24px',  bottom: '60px' });
-  const bombBtn = mkButton('BOMB', '#ffd84d', { right: '128px', bottom: '60px' });
+  const fireBtn = mkButton('FIRE', '#4cff7a', { right: '24px',  bottom: `calc(${SAFE_BOTTOM} + ${BTN_BASELINE}px)` });
+  const bombBtn = mkButton('BOMB', '#ffd84d', { right: '128px', bottom: `calc(${SAFE_BOTTOM} + ${BTN_BASELINE}px)` });
   layer.appendChild(fireBtn);
   layer.appendChild(bombBtn);
 

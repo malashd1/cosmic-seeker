@@ -94,10 +94,11 @@ html, body {
 }
 
 /* On touch devices the bottom 220 px is the dedicated control band
-   (joystick + FIRE + BOMB). Lift the HUD bottom row above it so the
-   lives / bomb count / combo line sits flush on top of the band. */
+   (joystick + FIRE + BOMB), itself lifted by `env(safe-area-inset-bottom)
+   + 28px` (see touchControls.ts BAND_BASELINE). The HUD-bottom row has
+   to sit flush on top of the band — same safe-area-inset compensation. */
 @media (pointer: coarse), (max-width: 520px) {
-  #hud-bottom { bottom: 230px; }
+  #hud-bottom { bottom: calc(env(safe-area-inset-bottom, 0px) + 258px); }
 }
 
 #bombs {
