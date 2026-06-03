@@ -110,17 +110,40 @@ export async function connect(): Promise<SolanaAddress | null> {
   // to declare itself before we surrender.
   const w = await awaitSolanaWallet();
   if (!w) {
-    alert('No Solana wallet detected. Install Phantom (mobile/desktop), Backpack, or use Seed Vault on a Seeker phone.');
+    // Common Seeker case: the user has Seed Vault enabled but no
+    // MWA-capable wallet app (Phantom mobile, Backpack, Solflare)
+    // installed. Direct them to install one.
+    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+    const isSeekerish = /android/i.test(ua);
+    alert(isSeekerish
+      ? 'No Solana wallet detected.\n\nOn Seeker / Android, install Phantom, Solflare or Backpack from the dApp Store, sign in once, then return and tap CONNECT WALLET.'
+      : 'No Solana wallet detected. Install Phantom or Backpack browser extension (desktop), or use Phantom mobile on a phone.');
     return null;
   }
   const features = w.features as any;
   const connectFeature = features['standard:connect'];
   if (!connectFeature?.connect) {
+    alert(`Wallet "${w.name}" does not implement standard:connect — it cannot be used here. Try a different wallet.`);
     throw new Error(`Wallet "${w.name}" does not implement standard:connect`);
   }
-  const result = await connectFeature.connect();
+  let result;
+  try {
+    result = await connectFeature.connect();
+  } catch (e: any) {
+    // The native MWA flow can fail for many reasons: user rejected,
+    // Seed Vault is locked, the wallet app crashed, no network, etc.
+    // Surface the real error so the user knows what to do next instead
+    // of silently restoring the CONNECT WALLET label.
+    const msg = String(e?.message ?? e).slice(0, 240);
+    console.warn('[wallet] standard:connect threw', e);
+    alert(`Wallet connect failed:\n\n${msg}\n\nTap CONNECT WALLET again to retry.`);
+    throw e;
+  }
   const acct = result?.accounts?.[0];
-  if (!acct) return null;
+  if (!acct) {
+    alert(`Wallet "${w.name}" returned no accounts. Authorize the app inside the wallet sheet and try again.`);
+    return null;
+  }
   _wallet = w;
   _account = acct;
   _address = await publicKeyToBase58(acct.publicKey);

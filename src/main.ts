@@ -203,6 +203,11 @@ async function runConnect() {
   btnConnect.disabled = true;
   const origLabel = btnConnect.textContent;
   btnConnect.textContent = 'CONNECTING…';
+  // Visible status under the button — replaces silent failures with on-
+  // screen feedback so the user (and remote-debug session) can tell at
+  // a glance which step of the MWA flow stalled.
+  walletStatus.textContent = 'Looking for Solana wallet…';
+  walletStatus.classList.remove('connected');
   audio.prime();
   try {
     const a = await connect();
@@ -217,10 +222,15 @@ async function runConnect() {
         if (h > 0) { highestUnlocked = h + 1; currentLevel = highestUnlocked; }
       } catch { /* backend may not have a record yet */ }
     } else {
+      // connect() returned null — wallet.ts already alerted with the
+      // specific reason (no wallet found / user declined / no accounts).
+      walletStatus.textContent = '';
       btnConnect.textContent = origLabel ?? 'CONNECT WALLET';
     }
   } catch (e: any) {
     console.warn('[wallet] connect failed', e);
+    // Same — wallet.ts surfaced the error via alert. Just reset the UI.
+    walletStatus.textContent = '';
     btnConnect.textContent = origLabel ?? 'CONNECT WALLET';
   } finally {
     btnConnect.disabled = false;
