@@ -36,6 +36,13 @@ export function attachTouchControls(canvas: HTMLCanvasElement, input: InputContr
   const BAND_BASELINE  = 28;                 // px the band lifts above the gesture bar
   const JOY_BASELINE   = BAND_BASELINE + 60; // joystick centred ~half-band-up
   const BTN_BASELINE   = BAND_BASELINE + 78; // fire/bomb a touch higher than joystick centre
+  // Band height was 220 px, which placed its top accent line 40 px ABOVE
+  // the joystick — gameplay (ship + enemy bullets) could visibly cross the
+  // line, contradicting what the line is supposed to mean. Match the band
+  // top to the joystick top (JOY_BASELINE + JOY_HEIGHT(120) = 208 above
+  // gesture bar) so the line cleanly tops the control zone.
+  const JOY_HEIGHT     = 120;
+  const BAND_HEIGHT    = JOY_BASELINE + JOY_HEIGHT - BAND_BASELINE; // → 180
 
   // ---- Control band (visual separator between play-field and gamepad) ----
   // Player ship is bounded above this band; enemies despawn before entering it.
@@ -44,7 +51,7 @@ export function attachTouchControls(canvas: HTMLCanvasElement, input: InputContr
     position: 'absolute',
     left: '0', right: '0',
     bottom: `calc(${SAFE_BOTTOM} + ${BAND_BASELINE}px)`,
-    height: '220px',
+    height: `${BAND_HEIGHT}px`,
     background: 'linear-gradient(180deg, rgba(13,5,36,0) 0%, rgba(13,5,36,0.55) 18%, rgba(13,5,36,0.85) 100%)',
     borderTop: '2px solid rgba(157, 77, 255, 0.4)',
     boxShadow: '0 -8px 24px rgba(157, 77, 255, 0.18)',

@@ -93,12 +93,13 @@ html, body {
   gap: 8px;
 }
 
-/* On touch devices the bottom 220 px is the dedicated control band
-   (joystick + FIRE + BOMB), itself lifted by `env(safe-area-inset-bottom)
-   + 28px` (see touchControls.ts BAND_BASELINE). The HUD-bottom row has
-   to sit flush on top of the band — same safe-area-inset compensation. */
+/* On touch devices the dedicated control band (joystick + FIRE + BOMB)
+   sits at `env(safe-area-inset-bottom) + 28px` with 180 px height (see
+   touchControls.ts BAND_BASELINE + BAND_HEIGHT). The HUD-bottom row sits
+   ~10 px above the band top: 28 + 180 + 10 = 218 px above the safe-area
+   inset. Keep this rule AFTER the base `#hud-bottom { bottom: 8px }`. */
 @media (pointer: coarse), (max-width: 520px) {
-  #hud-bottom { bottom: calc(env(safe-area-inset-bottom, 0px) + 258px); }
+  #hud-bottom { bottom: calc(env(safe-area-inset-bottom, 0px) + 218px); }
 }
 
 #bombs {
