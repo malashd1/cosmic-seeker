@@ -54,9 +54,21 @@ export function rollDrop(rng: () => number): PowerupKind | null {
   return TABLE[Math.floor(rng() * TABLE.length)];
 }
 
-export function bossDrop(rng: () => number): PowerupKind {
+/**
+ * Force-pick a weighted powerup from the full table, ignoring DROP_CHANCE.
+ * Used by the no-3-in-a-row guard in Game.ts: when the rolled drop would
+ * make a third consecutive same-kind drop, we replace it with a different
+ * kind picked from the same weighted distribution (minus the excluded one).
+ */
+export function pickAnyPowerup(rng: () => number, exclude?: PowerupKind): PowerupKind {
+  const pool = exclude ? TABLE.filter((k) => k !== exclude) : TABLE;
+  return pool[Math.floor(rng() * pool.length)];
+}
+
+export function bossDrop(rng: () => number, exclude?: PowerupKind): PowerupKind {
   // Bosses drop a powerful upgrade.
-  const pool: PowerupKind[] = ['life', 'armor', 'laser', 'plasma', 'rocket', 'double', 'rapid', 'bomb'];
+  const fullPool: PowerupKind[] = ['life', 'armor', 'laser', 'plasma', 'rocket', 'double', 'rapid', 'bomb'];
+  const pool = exclude ? fullPool.filter((k) => k !== exclude) : fullPool;
   return pool[Math.floor(rng() * pool.length)];
 }
 

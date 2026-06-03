@@ -11,7 +11,7 @@ import { spawnBoss, updateBoss, type Boss } from './boss';
 import { BOSS_SPECS } from './enemies';
 import { audio } from './audio';
 import { attachTouchControls } from './touchControls';
-import { rollDrop, bossDrop, spawnPowerup, POWERUP_SPECS, type Powerup, type PowerupKind } from './powerups';
+import { rollDrop, bossDrop, pickAnyPowerup, spawnPowerup, POWERUP_SPECS, type Powerup, type PowerupKind } from './powerups';
 
 const W = 480;
 const H = 960;
@@ -61,6 +61,22 @@ export class Game {
   elapsedMs = 0;
   lootDroppedThisLevel = 0;
   lootCapThisLevel = 1;
+  /**
+   * Sliding window of the last two powerup kinds dropped in the current
+   * run. Used to enforce "max 2 in a row" — if both entries match the
+   * next rolled drop, we replace it with a different kind. Reset on
+   * player death (new run); preserved across level transitions inside
+   * a single run so the rule spans the whole run.
+   */
+  recentDrops: PowerupKind[] = [];
+  /**
+   * Loot RNG is deliberately NON-deterministic — uses Math.random() so
+   * each restart yields a fresh loot scenario. The deterministic
+   * `this.rng` (seeded from player+level+day) still drives enemy AI,
+   * bullet jitter, and the backend's score-replay verifier; only loot
+   * is randomised per-run.
+   */
+  private lootRng: () => number = Math.random;
   bossSpawned = false;     // becomes true the moment spawnBoss() runs this level
   state: 'running' | 'paused' | 'won' | 'lost' | 'idle' = 'idle';
   bossPhaseAnnounce = 0;
@@ -811,16 +827,30 @@ export class Game {
     // Random loot drop — capped per level. Rockets are extra-rare:
     // a rocket can only drop on levels divisible by 10 (i.e. <=1 per 10 levels per run).
     if (this.lootDroppedThisLevel < this.lootCapThisLevel) {
-      let drop = rollDrop(() => this.rng.next());
+      let drop = rollDrop(this.lootRng);
       // Suppress rocket drops outside the rare slot.
       if (drop === 'rocket' && this.level.id % 10 !== 0) {
         // Re-roll once skipping rocket weight; if it still wants rocket, drop nothing.
-        drop = rollDrop(() => this.rng.next());
+        drop = rollDrop(this.lootRng);
         if (drop === 'rocket') drop = null;
+      }
+      // No 3-in-a-row of the same kind — if the previous two drops match
+      // the rolled kind, replace with a different one picked from the same
+      // weighted distribution.
+      if (drop !== null
+          && this.recentDrops.length >= 2
+          && this.recentDrops[0] === drop
+          && this.recentDrops[1] === drop) {
+        drop = pickAnyPowerup(this.lootRng, drop);
+        if (drop === 'rocket' && this.level.id % 10 !== 0) {
+          drop = pickAnyPowerup(this.lootRng, 'rocket');
+        }
       }
       if (drop) {
         this.powerups.push(spawnPowerup(drop, e.x, e.y));
         this.lootDroppedThisLevel++;
+        this.recentDrops.push(drop);
+        if (this.recentDrops.length > 2) this.recentDrops.shift();
       }
     }
     this.events.onScoreChange(this.player.score);
@@ -839,9 +869,19 @@ export class Game {
         color: this.boss.color, size: 5,
       });
     }
-    // Boss always drops a powerful loot + a points loot.
-    this.powerups.push(spawnPowerup(bossDrop(() => this.rng.next()), this.boss.x - 16, this.boss.y));
+    // Boss always drops a powerful loot + a points loot. Apply the same
+    // no-3-in-a-row guard so a boss kill after two same-kind drops can't
+    // perpetuate the streak.
+    let bk = bossDrop(this.lootRng);
+    if (this.recentDrops.length >= 2
+        && this.recentDrops[0] === bk
+        && this.recentDrops[1] === bk) {
+      bk = bossDrop(this.lootRng, bk);
+    }
+    this.powerups.push(spawnPowerup(bk, this.boss.x - 16, this.boss.y));
     this.powerups.push(spawnPowerup('points', this.boss.x + 16, this.boss.y));
+    this.recentDrops.push(bk);
+    if (this.recentDrops.length > 2) this.recentDrops.shift();
     this.boss = null;
     audio.play('boss-die');
     this.events.onScoreChange(this.player.score);
@@ -967,6 +1007,12 @@ export class Game {
       this.carriedExtraShots = 0;
       this.carriedRapidFire = false;
       this.carriedWingmen = 0;
+      // Fresh loot scenario on the next run: forget which kinds dropped
+      // in the previous (failed) attempt so the no-3-in-a-row history
+      // doesn't accidentally carry across runs. Math.random()-based RNG
+      // already gives different drops; clearing recentDrops also lets
+      // any kind appear again immediately.
+      this.recentDrops = [];
       this.carriedWeaponMode = 'normal';
       this.carriedWingmen = 0;
       this.events.onGameOver(result);
