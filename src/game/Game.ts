@@ -845,7 +845,20 @@ export class Game {
     if (e.kind === 'splitter' && (e.splitterChildren ?? 0) === 0) {
       const c1 = spawnEnemy('grunt', e.x - 12, e.y, 1, 1, 1, e.formationGroup);
       const c2 = spawnEnemy('grunt', e.x + 12, e.y, 1, 1, 1, e.formationGroup);
-      c1.state = 'formation'; c2.state = 'formation';
+      // Inherit the parent's pose only when the parent already reached
+      // formation. Otherwise leave `state: 'enter'` (the spawnEnemy
+      // default) so the children descend like normal grunts.
+      //
+      // Bug being closed: if the splitter died while still in `'enter'`
+      // (off-screen at y ≈ -40) and we forced the children to
+      // `'formation'`, they were locked into the formation-state branch
+      // that only animates `x` — `y` stayed at -40 forever and the
+      // level couldn't complete. Same shape as the turret stuck-bug
+      // we just fixed in `'enter'`, different trigger.
+      if (e.state === 'formation') {
+        c1.state = 'formation';
+        c2.state = 'formation';
+      }
       this.enemies.push(c1, c2);
     }
     // Random loot drop — capped per level. Rockets are extra-rare:
