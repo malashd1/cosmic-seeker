@@ -461,7 +461,31 @@ export class Game {
       e.age += dt;
       // entry: descend to anchor
       if (e.state === 'enter') {
-        e.y += e.spec.speed * m.speed * 0.6 * dt;
+        // ENTRY_SPEED_FLOOR fixes two related bugs reported on L36-L37:
+        //
+        // 1. Stuck level. `turret.spec.speed === 0` so `y` never advanced
+        //    past the spawn `-40`. The despawn check at the bottom of this
+        //    function (and the level-completion check on `this.enemies
+        //    .length === 0`) both skip `'enter'`-state enemies, so a
+        //    turret that never reached its anchor sat off-screen forever
+        //    and the level couldn't finish. Bombs damage them but turret
+        //    HP at L36 (≈15 HP after the L20→2× mult) needs ~5 bombs to
+        //    kill — players carry 2, so they're stuck.
+        //
+        // 2. "Green enemies crawl out so slowly at the end". sniper.color
+        //    is `#4cff7a` (bright green), spec.speed only 20 — at the
+        //    base 0.6 factor + m.speed ≈ 1.1 that's ~13 px/s, ~30 s to
+        //    cross 400 px of canvas. Boring wait.
+        //
+        // A 120 px/s floor brings both into formation in ~5 s no matter
+        // how the spec is tuned. Subsequent dive / weave / drift still
+        // use the raw `spec.speed`, so combat behaviour is unaffected.
+        // (Parallel to the existing kamikaze-despawn fix on PLAYABLE_BOTTOM
+        // crossing — same pattern: floor a degenerate update so the wave
+        // can actually finish.)
+        const ENTRY_SPEED_FLOOR = 120;
+        const entrySpeed = Math.max(e.spec.speed, ENTRY_SPEED_FLOOR);
+        e.y += entrySpeed * m.speed * 0.6 * dt;
         if (e.y >= e.anchorY) {
           e.state = e.spec.behavior === 'kamikaze' ? 'kamikaze' : 'formation';
         }
