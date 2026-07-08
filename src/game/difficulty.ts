@@ -53,11 +53,16 @@ export function modsFor(level: number): DifficultyMods {
   return {
     hp: hpMultFor(level),
     speed: 0.9 + d * 1.1,
-    // Bumped base from 0.8 → 1.3 so even tutorial-tier grunts (spec.fireRate
-    // 0.5) shoot at ~0.65 rps from the get-go. The previous 0.4 rps meant
-    // entire opening waves on L1-3 passed with almost no enemy bullets on
-    // screen, which read as "the game is too easy".
-    fireRate: 1.3 + d * 1.6,
+    // Global enemy fire-rate multiplier. Applied in Game.ts as
+    //   e.fireCooldown = 1 / (e.spec.fireRate * m.fireRate)
+    // so halving this doubles the interval between enemy shots.
+    //
+    // Base formula was `1.3 + d * 1.6` (0.65-1.45 rps for tutorial grunts;
+    // higher for later tiers). Reduced by 50 % on player request — too
+    // many bullets on-screen at once was making mid-game feel like
+    // bullet-hell rather than Galaxian. Bosses are NOT affected: they
+    // fire on hand-tuned per-phase timers in boss.ts, not via mods.
+    fireRate: (1.3 + d * 1.6) * 0.5,
     bulletSpeed: 0.9 + d * 0.8,
     spawnDensity: 1 + d * 1.4,
     rewardMul: 1 + d * 4,
